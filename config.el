@@ -1,7 +1,8 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-(progn (define-key key-translation-map (kbd ";") (kbd ":"))
-       (define-key key-translation-map (kbd ":") (kbd ";")))
+(when (memq window-system '(mac ns))
+  (progn (define-key key-translation-map (kbd ";") (kbd ":"))
+        (define-key key-translation-map (kbd ":") (kbd ";"))))
 
 (setq doom-font (font-spec :family "Iosevka" :size 13))
 
@@ -13,16 +14,56 @@
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 (use-package hl-line+
+  :disabled
   :config
   (hl-line-when-idle-interval 0.3)
   (toggle-hl-line-when-idle t))
 
+;; keybindings
+;; -----------
 (map! :leader
       :desc "swiper" "/" #'swiper
       :desc "search project" "d" #'+default/search-project)
 
 (map! :desc "save" "s-." #'evil-write-all)
 (map! :desc "universal argument" "C-s-u" #'universal-argument)
+
+;; typescript
+;; ----------
+(with-eval-after-load 'flycheck
+  (advice-add 'flycheck-eslint-config-exists-p :override (lambda() t)))
+
+(defvar hao/prettier-bin)
+
+(defun hao/use-eslint-from-node-modules ()
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                ".hao"))
+         (prettier (and root
+                      (expand-file-name "node_modules/prettier/bin-prettier.js"
+                                        root)))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and prettier (file-executable-p eslint))
+      (setq-local hao/prettier-bin prettier))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-eslint-args '("--cache"))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+
+(defun hao/typescript-mode-hook ()
+  (hao/use-eslint-from-node-modules)
+  (typescript-format-on-save-mode))
+
+(add-hook 'web-mode-hook 'hao/typescript-mode-hook)
+
+(reformatter-define typescript-format
+  :program hao/prettier-bin
+  :args (list "--stdin-filepath" buffer-file-name)
+  :lighter "")
+
+;; misc
+(setq counsel-rg-base-command "rg --hidden -M 120 --with-filename --no-heading --line-number --color never %s")
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
