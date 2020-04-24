@@ -23,6 +23,7 @@
 ;; -----------
 (map! :leader
       :desc "swiper" "/" #'swiper
+      :desc "counsel-yank-pop" "p" #'counsel-yank-pop
       :desc "search project" "d" #'+default/search-project)
 
 (map! :desc "save" "s-." #'evil-write-all)
@@ -62,8 +63,10 @@
   :args (list "--stdin-filepath" buffer-file-name)
   :lighter "")
 
-;; misc
+;; counsel and ivy
 (setq counsel-rg-base-command "rg --hidden -M 120 --with-filename --no-heading --line-number --color never %s")
+(after! ivy
+  (setq ivy-magic-slash-non-match-action 'ivy-magic-slash-non-match-cd-selected))
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
