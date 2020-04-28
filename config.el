@@ -1,8 +1,7 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-(when (memq window-system '(mac ns))
-  (progn (define-key key-translation-map (kbd ";") (kbd ":"))
-        (define-key key-translation-map (kbd ":") (kbd ";"))))
+(progn (define-key key-translation-map (kbd ";") (kbd ":"))
+      (define-key key-translation-map (kbd ":") (kbd ";")))
 
 (setq doom-font (font-spec :family "Iosevka" :size 13))
 
